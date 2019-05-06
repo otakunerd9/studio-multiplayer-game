@@ -9,8 +9,18 @@ import uno from "./games/uno/uno.js";
 import Mafia from "./games/mafia/Mafia.js";
 import Pokemon from "./games/pokemon/Pokemon.js";
 import spaceInvaders from "./games/spaceInvaders/spaceInvaders.js";
+import guessThatWord from "./games/guessthatword/guessthatword.js";
 
 const gameData = {
+	guessThatWord: {
+		title: "Guess That Word",
+		authors: "Andre Isaac Jr. and Adrian Herbert",
+		description: "Play hangman.",
+		minUsers: 1,
+		maxUsers: 2,
+		component: guessThatWord
+	},
+
 	spaceInvaders: {
 		title: "Space Invaders",
 		authors: "Andre Isaac Jr. and Adrian Herbert",

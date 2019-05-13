@@ -5,7 +5,7 @@ import UserApi from "../../UserApi.js";
 export default class guessThatWord extends GameComponent {
 	constructor(props) {
 		super(props);
-		this.state = { word: "" };
+		this.state = { word: "", displayWord: "" };
 
 		this.updateWord = this.updateWord.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
@@ -16,16 +16,20 @@ export default class guessThatWord extends GameComponent {
 		// }
 	}
 
+	newSubmit() {
+		this.getSessionDatabaseRef().set({ displayWord: this.state.word });
+	}
+
 	updateWord(e) {
 		this.setState({ word: e.target.value });
 	}
 
 	onSessionDataChanged(data) {
-		console.log(data.word);
+		console.log(data.displayWord);
+		this.setState({ displayWord: data.displayWord });
 	}
 
 	handleSubmit() {
-		this.getSessionDatabaseRef().set({ word: this.state.word });
 		// console.log(this.state.word);
 	}
 
@@ -40,18 +44,34 @@ export default class guessThatWord extends GameComponent {
 		} else {
 			status = "I am guest";
 		}
+		var wordLength = this.state.displayWord.length;
+		var newString = "";
+		for (var i = 0; i < wordLength; i++) {
+			newString += "_ ";
+		}
 
 		var creator = UserApi.getName(this.getSessionCreatorUserId());
-		return (
-			<div>
-				<p>Session ID: {id}</p>
-				<p>Session creator: {creator}</p>
-				<p>Session users:</p>
-				<ul>{users}</ul>
-				<p>{status}</p>
-				<input type="text" onChange={this.updateWord} />
-				<input type="submit" onClick={this.handleSubmit} />
-			</div>
-		);
+		if (this.state.displayWord === "") {
+			return (
+				<div>
+					<p>Session ID: {id}</p>
+					<p>Session creator: {creator}</p>
+					<p>Session users:</p>
+					<ul>{users}</ul>
+					<p>{status}</p>
+					<input type="text" onChange={this.updateWord} />
+					<input type="submit" onClick={this.handleSubmit} />
+					<p>{this.state.displayWord} </p>
+				</div>
+			);
+		} else {
+			return (
+				<div>
+					<p>{newString} </p>
+					<input type="text" onChange={this.guessedWord} />
+					<input type="submit" onClick={this.newSubmit} />
+				</div>
+			);
+		}
 	}
 }

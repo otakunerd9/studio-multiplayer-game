@@ -5,19 +5,31 @@ import UserApi from "../../UserApi.js";
 export default class guessThatWord extends GameComponent {
 	constructor(props) {
 		super(props);
-		this.state = { word: "", displayWord: "" };
-
+		this.state = { word: "", displayWord: "", guessedLetter: "", guesses: [] };
+		this.getSessionDatabaseRef().set({
+			displayWord: this.state.word,
+			guesses: []
+		});
 		this.updateWord = this.updateWord.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
-	}
-
-	onKeyPress(e) {
-		// if (e.key === "d") {
-		// }
+		this.guessedLetter = this.guessedLetter.bind(this);
+		this.newSubmit = this.newSubmit.bind(this);
 	}
 
 	newSubmit() {
-		this.getSessionDatabaseRef().set({ displayWord: this.state.word });
+		var letter = this.state.guessedLetter;
+		var guesses = this.state.guesses;
+		if (guesses === undefined) {
+			guesses = [];
+		}
+		guesses.push(letter);
+		this.getSessionDatabaseRef().update({
+			guesses: guesses
+		});
+	}
+
+	guessedLetter(e) {
+		this.setState({ guessedLetter: e.target.value });
 	}
 
 	updateWord(e) {
@@ -25,15 +37,30 @@ export default class guessThatWord extends GameComponent {
 	}
 
 	onSessionDataChanged(data) {
-		console.log(data.displayWord);
-		this.setState({ displayWord: data.displayWord });
+		console.log("data: ", data);
+		if (data.guesses === undefined) {
+			data.guesses = [];
+		}
+
+		this.setState({
+			displayWord: data.displayWord,
+			guesses: data.guesses
+		});
 	}
 
 	handleSubmit() {
+		this.getSessionDatabaseRef().set({ displayWord: this.state.word });
 		// console.log(this.state.word);
 	}
 
 	render() {
+		function letterInList(l, guesses) {
+			for (var i = 0; i < guesses.length; i++) {
+				if (guesses[i] === l) return true;
+			}
+			s;
+			return false;
+		}
 		var id = this.getSessionId();
 		var users = this.getSessionUserIds().map(user_id => (
 			<li key={user_id}>{UserApi.getName(user_id)}</li>
@@ -44,10 +71,18 @@ export default class guessThatWord extends GameComponent {
 		} else {
 			status = "I am guest";
 		}
+
+		console.log(this.state);
 		var wordLength = this.state.displayWord.length;
+		var displayWord = this.state.displayWord;
 		var newString = "";
 		for (var i = 0; i < wordLength; i++) {
-			newString += "_ ";
+			var char = displayWord[i];
+			if (letterInList(char, this.state.guesses)) {
+				newString += char + " ";
+			} else {
+				newString += "_ ";
+			}
 		}
 
 		var creator = UserApi.getName(this.getSessionCreatorUserId());
@@ -68,7 +103,7 @@ export default class guessThatWord extends GameComponent {
 			return (
 				<div>
 					<p>{newString} </p>
-					<input type="text" onChange={this.guessedWord} />
+					<input type="text" onChange={this.guessedLetter} />
 					<input type="submit" onClick={this.newSubmit} />
 				</div>
 			);
